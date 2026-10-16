@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Receipt
@@ -39,6 +40,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -83,6 +85,7 @@ fun TransactionsScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedTypeFilter by remember { mutableStateOf<TransactionType?>(null) }
     var showOnlyReversed by remember { mutableStateOf(false) }
+    var showOnlyFriends by remember { mutableStateOf(false) }
 
     var selectedTxForDetails by remember { mutableStateOf<FinancialTransaction?>(null) }
     var showReversePromptForTx by remember { mutableStateOf<FinancialTransaction?>(null) }
@@ -90,14 +93,15 @@ fun TransactionsScreen(
     var showClearAllPrompt by remember { mutableStateOf(false) }
     var reversalReasonText by remember { mutableStateOf("") }
 
-    val filteredTransactions = remember(state.transactions, searchQuery, selectedTypeFilter, showOnlyReversed) {
+    val filteredTransactions = remember(state.transactions, searchQuery, selectedTypeFilter, showOnlyReversed, showOnlyFriends) {
         state.transactions.filter { tx ->
             val matchesSearch = searchQuery.isBlank() ||
                 tx.description.contains(searchQuery, ignoreCase = true) ||
                 (tx.notes?.contains(searchQuery, ignoreCase = true) == true)
             val matchesType = selectedTypeFilter == null || tx.type == selectedTypeFilter
             val matchesReversed = if (showOnlyReversed) tx.isReversed else true
-            matchesSearch && matchesType && matchesReversed
+            val matchesFriends = if (showOnlyFriends) tx.friendId != null else true
+            matchesSearch && matchesType && matchesReversed && matchesFriends
         }
     }
 
@@ -204,13 +208,174 @@ fun TransactionsScreen(
                         label = { Text("Transfers") }
                     )
                     FilterChip(
+                        selected = showOnlyFriends,
+                        onClick = {
+                            showOnlyFriends = !showOnlyFriends
+                            if (showOnlyFriends) showOnlyReversed = false
+                        },
+                        label = { Text("With Friends") }
+                    )
+                    FilterChip(
                         selected = showOnlyReversed,
                         onClick = {
                             showOnlyReversed = !showOnlyReversed
                             selectedTypeFilter = null
+                            showOnlyFriends = false
                         },
                         label = { Text("Reversed") }
                     )
+                }
+            }
+
+            // Current Balances with Friends Card
+            if (showOnlyFriends) {
+                item {
+                    Card(
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("card_friends_current_balances")
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        Icons.Default.Group,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Current Balances with Friends",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                                ) {
+                                    Text(
+                                        text = "${state.friends.size} friends",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Net position summary
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "TOTAL NET BALANCE",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                                    )
+                                    Text(
+                                        text = when {
+                                            state.netFriendsPositionPaise > 0L -> "+${AccountingEngine.formatPaise(state.netFriendsPositionPaise)}"
+                                            state.netFriendsPositionPaise < 0L -> "-${AccountingEngine.formatPaise(-state.netFriendsPositionPaise)}"
+                                            else -> "₹0.00 (Settled Up)"
+                                        },
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = when {
+                                            state.netFriendsPositionPaise > 0L -> MaterialTheme.colorScheme.primary
+                                            state.netFriendsPositionPaise < 0L -> MaterialTheme.colorScheme.error
+                                            else -> MaterialTheme.colorScheme.onSecondaryContainer
+                                        }
+                                    )
+                                }
+
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Text(
+                                        text = "Owed to you: ${AccountingEngine.formatPaise(state.totalReceivablesPaise)}",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = "You owe: ${AccountingEngine.formatPaise(state.totalPayablesPaise)}",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+
+                            if (state.friends.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.15f))
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(
+                                    text = "Individual Friend Balances:",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.9f)
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    state.friends.forEach { friend ->
+                                        Surface(
+                                            shape = RoundedCornerShape(10.dp),
+                                            color = when {
+                                                friend.netPositionPaise > 0L -> MaterialTheme.colorScheme.primaryContainer
+                                                friend.netPositionPaise < 0L -> MaterialTheme.colorScheme.errorContainer
+                                                else -> MaterialTheme.colorScheme.surfaceVariant
+                                            },
+                                            modifier = Modifier.padding(vertical = 2.dp)
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                            ) {
+                                                Text(
+                                                    text = friend.name,
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    text = when {
+                                                        friend.netPositionPaise > 0L -> "+${AccountingEngine.formatPaise(friend.netPositionPaise)} (owes you)"
+                                                        friend.netPositionPaise < 0L -> "-${AccountingEngine.formatPaise(-friend.netPositionPaise)} (you owe)"
+                                                        else -> "Settled (₹0.00)"
+                                                    },
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = when {
+                                                        friend.netPositionPaise > 0L -> MaterialTheme.colorScheme.primary
+                                                        friend.netPositionPaise < 0L -> MaterialTheme.colorScheme.error
+                                                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -325,6 +490,17 @@ fun TransactionsScreen(
                                         )
                                     }
                                 }
+
+                                val rowFriend = state.friends.find { it.id == tx.friendId }
+                                if (rowFriend != null) {
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "With ${rowFriend.name} • Current Balance: ${if (rowFriend.netPositionPaise >= 0) "+" else ""}${AccountingEngine.formatPaise(rowFriend.netPositionPaise)}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (rowFriend.netPositionPaise >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                                    )
+                                }
                             }
 
                             Column(horizontalAlignment = Alignment.End) {
@@ -427,7 +603,36 @@ fun TransactionsScreen(
                     Text("Destination Account: ${destAccount.name}", style = MaterialTheme.typography.bodyMedium)
                 }
                 if (friend != null) {
-                    Text("Friend: ${friend.name}", style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Friend: ${friend.name}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = "Current Balance: ${if (friend.netPositionPaise >= 0) "+" else ""}${AccountingEngine.formatPaise(friend.netPositionPaise)}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = if (friend.netPositionPaise >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("They owe you: ${AccountingEngine.formatPaise(friend.totalReceivablePaise)}", style = MaterialTheme.typography.labelSmall)
+                                Text("You owe: ${AccountingEngine.formatPaise(friend.totalPayablePaise)}", style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))

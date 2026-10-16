@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -287,45 +288,60 @@ fun DashboardScreen(
         // 4. Quick Action Buttons
         item {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Button(
                     onClick = { onOpenAddTransaction(0) },
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 10.dp),
                     modifier = Modifier
                         .weight(1f)
                         .testTag("btn_quick_expense")
                 ) {
-                    Icon(Icons.Default.ArrowDownward, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Expense")
+                    Text(
+                        text = "Expense",
+                        maxLines = 1,
+                        softWrap = false,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
 
                 Button(
                     onClick = { onOpenAddTransaction(1) },
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 10.dp),
                     modifier = Modifier
                         .weight(1f)
                         .testTag("btn_quick_income")
                 ) {
-                    Icon(Icons.Default.ArrowUpward, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Income")
+                    Text(
+                        text = "Income",
+                        maxLines = 1,
+                        softWrap = false,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
 
                 OutlinedButton(
                     onClick = { onOpenAddTransaction(2) },
                     shape = RoundedCornerShape(14.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 10.dp),
                     modifier = Modifier
                         .weight(1f)
                         .testTag("btn_quick_transfer")
                 ) {
-                    Icon(Icons.Default.SwapHoriz, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Transfer")
+                    Text(
+                        text = "Transfer",
+                        maxLines = 1,
+                        softWrap = false,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
