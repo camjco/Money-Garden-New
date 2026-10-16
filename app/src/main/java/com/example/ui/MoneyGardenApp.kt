@@ -100,11 +100,8 @@ fun MoneyGardenApp(
         topBar = {
             TopAppBar(
                 title = {
-                    val ownerName = currentUser?.displayName?.split(" ")?.firstOrNull()?.takeIf { it.isNotBlank() }
-                        ?: state.userProfile?.displayName?.takeIf { it.isNotBlank() }
-                        ?: "Arpita"
                     Text(
-                        text = "$ownerName's Money Garden",
+                        text = "Money Garden",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )

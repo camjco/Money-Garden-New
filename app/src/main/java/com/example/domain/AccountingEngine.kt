@@ -10,7 +10,7 @@ import java.util.Locale
 import kotlin.math.abs
 
 /**
- * Double-entry accounting engine for Arpita's Money Garden.
+ * Double-entry accounting engine for Money Garden.
  * Guarantees that every transaction produces balanced debits and credits,
  * and maintains reconcilable ledger balances with integer minor units (paise).
  */
