@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
@@ -60,6 +61,7 @@ fun UserProfileDialog(
     user: FirebaseUser,
     currentPreferredName: String = "",
     onUpdatePreferredName: (String) -> Unit = {},
+    onManageCategories: () -> Unit = {},
     onDismiss: () -> Unit,
     onSignedOut: () -> Unit,
     modifier: Modifier = Modifier
@@ -207,7 +209,24 @@ fun UserProfileDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
+
+                OutlinedButton(
+                    onClick = {
+                        onDismiss()
+                        onManageCategories()
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("btn_profile_manage_categories")
+                ) {
+                    Icon(Icons.Default.Category, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Manage Expense & Income Categories")
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // Account info card
                 Card(

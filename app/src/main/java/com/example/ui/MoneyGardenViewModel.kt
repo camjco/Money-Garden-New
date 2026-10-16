@@ -555,4 +555,40 @@ class MoneyGardenViewModel(application: Application) : AndroidViewModel(applicat
             repository.updateUserProfileDisplayName(displayName, markAsPreferred = false)
         }
     }
+
+    fun addCategory(
+        name: String,
+        type: CategoryType,
+        iconName: String = "category",
+        colorHex: String = "#10B981",
+        onCreated: (Long) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            try {
+                val newCategory = TransactionCategory(
+                    name = name.trim(),
+                    type = type,
+                    iconName = iconName,
+                    colorHex = colorHex,
+                    isDefault = false
+                )
+                val id = repository.saveCategory(newCategory)
+                _userMessage.value = "Category \"${name.trim()}\" added successfully! 🏷️"
+                onCreated(id)
+            } catch (e: Exception) {
+                _userMessage.value = "Failed to add category: ${e.message}"
+            }
+        }
+    }
+
+    fun deleteCategory(categoryId: Long) {
+        viewModelScope.launch {
+            try {
+                repository.deleteCategory(categoryId)
+                _userMessage.value = "Category deleted"
+            } catch (e: Exception) {
+                _userMessage.value = "Failed to delete category: ${e.message}"
+            }
+        }
+    }
 }

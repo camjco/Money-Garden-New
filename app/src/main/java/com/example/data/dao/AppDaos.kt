@@ -68,6 +68,12 @@ interface CategoryDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertDefaultCategories(categories: List<TransactionCategory>)
+
+    @Delete
+    suspend fun deleteCategory(category: TransactionCategory)
+
+    @Query("DELETE FROM transaction_categories WHERE id = :id")
+    suspend fun deleteCategoryById(id: Long)
 }
 
 @Dao

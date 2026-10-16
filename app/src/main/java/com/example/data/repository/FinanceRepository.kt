@@ -699,6 +699,10 @@ class FinanceRepository(private val db: AppDatabase) {
         db.categoryDao().insertCategory(category)
     }
 
+    suspend fun deleteCategory(categoryId: Long): Unit = withContext(Dispatchers.IO) {
+        db.categoryDao().deleteCategoryById(categoryId)
+    }
+
     suspend fun updateUserProfile(profile: UserProfile) = withContext(Dispatchers.IO) {
         db.userProfileDao().saveUserProfile(profile)
     }

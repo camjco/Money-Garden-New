@@ -7,10 +7,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Assessment
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Park
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Spa
+import com.example.data.model.CategoryType
+import com.example.ui.screens.AddCategoryDialog
+import com.example.ui.screens.CategoryManagerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -82,6 +86,9 @@ fun MoneyGardenApp(
     var showReconciliationDialog by remember { mutableStateOf(false) }
     var showOpeningBalancesDialog by remember { mutableStateOf(false) }
     var showUserProfileDialog by remember { mutableStateOf(false) }
+    var showCategoryManagerDialog by remember { mutableStateOf(false) }
+    var showAddCategoryDialog by remember { mutableStateOf(false) }
+    var categoryTypeToAdd by remember { mutableStateOf<CategoryType?>(null) }
 
     val navTabs = listOf(
         NavTab.Dashboard,
@@ -120,6 +127,17 @@ fun MoneyGardenApp(
                         Icon(
                             androidx.compose.material.icons.Icons.Default.AccountBalance,
                             contentDescription = "Opening Balances",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    IconButton(
+                        onClick = { showCategoryManagerDialog = true },
+                        modifier = Modifier.testTag("btn_top_categories")
+                    ) {
+                        Icon(
+                            androidx.compose.material.icons.Icons.Default.Category,
+                            contentDescription = "Manage Categories",
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -330,6 +348,9 @@ fun MoneyGardenApp(
                     toAccountId = toId,
                     description = desc
                 )
+            },
+            onAddCategory = { name, type, icon, color, onCreated ->
+                viewModel.addCategory(name, type, icon, color, onCreated)
             }
         )
     }
@@ -381,10 +402,42 @@ fun MoneyGardenApp(
             onUpdatePreferredName = { newName ->
                 viewModel.setPreferredDisplayName(newName, currentUser)
             },
+            onManageCategories = { showCategoryManagerDialog = true },
             onDismiss = { showUserProfileDialog = false },
             onSignedOut = {
                 showUserProfileDialog = false
                 onSignOut()
+            }
+        )
+    }
+
+    // Category Manager Dialog
+    if (showCategoryManagerDialog) {
+        CategoryManagerDialog(
+            categories = state.categories,
+            onDismiss = { showCategoryManagerDialog = false },
+            onAddCategoryClick = { type ->
+                categoryTypeToAdd = type
+                showAddCategoryDialog = true
+            },
+            onDeleteCategory = { catId ->
+                viewModel.deleteCategory(catId)
+            }
+        )
+    }
+
+    // Add Category Dialog
+    if (showAddCategoryDialog && categoryTypeToAdd != null) {
+        AddCategoryDialog(
+            initialType = categoryTypeToAdd!!,
+            onDismiss = {
+                showAddCategoryDialog = false
+                categoryTypeToAdd = null
+            },
+            onCategoryAdded = { name, type, iconName, colorHex ->
+                viewModel.addCategory(name, type, iconName, colorHex)
+                showAddCategoryDialog = false
+                categoryTypeToAdd = null
             }
         )
     }

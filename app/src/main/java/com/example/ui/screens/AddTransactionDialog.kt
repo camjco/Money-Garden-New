@@ -83,9 +83,11 @@ fun AddTransactionDialog(
     onSaveSharedExpense: (date: Long, totalPaise: Long, arpitaPaise: Long, friendAllocations: Map<Long, Long>, desc: String, accountId: Long, categoryId: Long, receiptUri: String?, notes: String?) -> Unit,
     onSaveFriendPaidExpense: (date: Long, totalPaise: Long, arpitaPaise: Long, desc: String, friendId: Long, categoryId: Long, notes: String?) -> Unit,
     onSaveIncome: (date: Long, amountPaise: Long, desc: String, destinationAccountId: Long, categoryId: Long, notes: String?) -> Unit,
-    onSaveTransfer: (date: Long, amountPaise: Long, fromAccountId: Long, toAccountId: Long, desc: String) -> Unit
+    onSaveTransfer: (date: Long, amountPaise: Long, fromAccountId: Long, toAccountId: Long, desc: String) -> Unit,
+    onAddCategory: ((name: String, type: CategoryType, iconName: String, colorHex: String, onCreated: (Long) -> Unit) -> Unit)? = null
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
+    var showAddCategoryForType by remember { mutableStateOf<CategoryType?>(null) }
     var selectedDateMillis by remember { androidx.compose.runtime.mutableLongStateOf(System.currentTimeMillis()) }
     val context = androidx.compose.ui.platform.LocalContext.current
     val sdf = remember { java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.US) }
@@ -312,8 +314,24 @@ fun AddTransactionDialog(
                 when (selectedTab) {
                     0 -> { // EXPENSE WORKFLOW
                         // Category Selection
-                        Text("Category", style = MaterialTheme.typography.labelMedium)
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Category", style = MaterialTheme.typography.labelMedium)
+                            if (onAddCategory != null) {
+                                TextButton(
+                                    onClick = { showAddCategoryForType = CategoryType.EXPENSE },
+                                    modifier = Modifier.testTag("btn_add_expense_category")
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Add Category", style = MaterialTheme.typography.labelSmall)
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxWidth()
@@ -508,8 +526,24 @@ fun AddTransactionDialog(
                     }
 
                     1 -> { // INCOME WORKFLOW
-                        Text("Income Category", style = MaterialTheme.typography.labelMedium)
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Income Category", style = MaterialTheme.typography.labelMedium)
+                            if (onAddCategory != null) {
+                                TextButton(
+                                    onClick = { showAddCategoryForType = CategoryType.INCOME },
+                                    modifier = Modifier.testTag("btn_add_income_category")
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Add Category", style = MaterialTheme.typography.labelSmall)
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             incomeCategories.forEach { cat ->
                                 FilterChip(
@@ -672,5 +706,19 @@ fun AddTransactionDialog(
                 }
             }
         }
+    }
+
+    if (showAddCategoryForType != null) {
+        val catType = showAddCategoryForType!!
+        AddCategoryDialog(
+            initialType = catType,
+            onDismiss = { showAddCategoryForType = null },
+            onCategoryAdded = { name, type, iconName, colorHex ->
+                onAddCategory?.invoke(name, type, iconName, colorHex) { newId ->
+                    selectedCategoryId = newId
+                }
+                showAddCategoryForType = null
+            }
+        )
     }
 }
