@@ -324,6 +324,13 @@ fun SignInScreen(
                     color = MaterialTheme.colorScheme.outline
                 )
             }
+
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "Money Garden v1.4 (Build 5)",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f)
+            )
         }
     }
 }

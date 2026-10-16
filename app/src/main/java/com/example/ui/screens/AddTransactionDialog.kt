@@ -384,12 +384,12 @@ fun AddTransactionDialog(
                                 FilterChip(
                                     selected = whoPaid == "ARPITA",
                                     onClick = { whoPaid = "ARPITA" },
-                                    label = { Text("Arpita Paid") }
+                                    label = { Text("You Paid") }
                                 )
                                 FilterChip(
                                     selected = whoPaid == "FRIEND",
                                     onClick = { whoPaid = "FRIEND" },
-                                    label = { Text("Friend Paid for Arpita") }
+                                    label = { Text("Friend Paid for You") }
                                 )
                             }
 
@@ -434,7 +434,7 @@ fun AddTransactionDialog(
                                 OutlinedTextField(
                                     value = arpitaShareText,
                                     onValueChange = { arpitaShareText = it },
-                                    label = { Text("Arpita's Personal Share (₹)") },
+                                    label = { Text("Your Personal Share (₹)") },
                                     modifier = Modifier.fillMaxWidth()
                                 )
 
@@ -466,7 +466,7 @@ fun AddTransactionDialog(
                                 OutlinedTextField(
                                     value = arpitaShareText,
                                     onValueChange = { arpitaShareText = it },
-                                    label = { Text("Arpita's Share (You Owe Friend ₹)") },
+                                    label = { Text("Your Share (You Owe Friend ₹)") },
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }

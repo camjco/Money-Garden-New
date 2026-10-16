@@ -5,16 +5,21 @@
 
 ---
 
-## 📱 How to Download, Install & Update the APK
+## 📱 How to Download, Install & Update MoneyGarden.apk
 
-### Step 1: Download the APK
-1. In the **Google AI Studio** project menu:
-   - Click on the **Settings** or **Project Menu** (top-right area).
-   - Choose **Download APK** or **Export Project** to download the latest compiled `app-debug.apk` directly to your computer or phone.
-   - *Alternatively, if accessing via mobile browser, download the APK file directly to your phone's `Downloads` folder.*
+### Option A: Direct Download from GitHub Repository (Recommended)
+The ready-to-install Android package **`MoneyGarden.apk`** is located right in the root of this GitHub repository!
+1. In this repository, click on **`MoneyGarden.apk`**.
+2. Click **Download raw file** (or **Download**) to save `MoneyGarden.apk` (Version 1.4) directly to your Android device or computer.
+
+### Option B: Export / Download from Google AI Studio
+1. In the **Google AI Studio** project menu (top right):
+2. Click **Download APK** or **Export Project** to obtain the latest build `MoneyGarden.apk` / `app-debug.apk`.
+
+---
 
 ### Step 2: Transfer to Your Android Device (if downloaded on PC)
-- Transfer the downloaded `.apk` file to your phone via:
+- Transfer the downloaded `MoneyGarden.apk` file to your phone via:
   - USB cable transfer to your device's `Download` folder.
   - Upload to Google Drive / OneDrive and download on your phone.
   - Send to yourself via Telegram / WhatsApp / Email.
@@ -28,7 +33,7 @@ Because this is a standalone APK installed directly (not from Google Play Store)
 
 ### Step 4: Install the App
 1. Open your phone's **Files** or **Downloads** app.
-2. Tap on the latest `app-debug.apk` file.
+2. Tap on **`MoneyGarden.apk`**.
 3. Tap **Install** (or **Update**).
 4. If **Google Play Protect** displays a prompt saying *"Unrecognized app"* or *"Blocked by Play Protect"*:
    - Tap **"More details"** (or the small arrow dropdown).
@@ -37,33 +42,15 @@ Because this is a standalone APK installed directly (not from Google Play Store)
 
 ---
 
-## ⚠️ Troubleshooting: Why Changes Might Not Be Effected (Fixes)
+## 🚀 Version History & Changes (v1.0 to v1.4)
 
-If you have downloaded and installed a new APK but the newest changes or authentication are not showing:
-
-### 1. 🔄 Uninstall the Old App First (Most Common Fix)
-When Android installs an updated debug APK, the operating system package manager may retain existing cached bytecode, compiled classes, or conflicting package signatures.
-- **Fix:** 
-  1. Long-press the **Money Garden** icon on your home screen or app drawer.
-  2. Tap **App info** (or drag to **Uninstall**).
-  3. Tap **Uninstall** and confirm.
-  4. Now go to your **Downloads** folder and tap the newly downloaded APK to perform a clean, fresh installation.
-
-### 2. 🧹 Clear Storage & App Cache
-Android preserves local Room SQLite database files and cached settings across reinstalls if Google Cloud Auto-Backup is enabled on your phone.
-- **Fix:**
-  1. Go to **Settings** → **Apps** → **Money Garden**.
-  2. Tap **Storage & cache**.
-  3. Tap **Clear storage** (or **Clear data**) and **Clear cache**.
-  4. Re-open the app.
-
-### 3. 📦 Ensure You Are Installing the Right File
-- Often devices store multiple files named `app-debug.apk`, `app-debug (1).apk`, `app-debug (2).apk` in the Downloads folder.
-- **Fix:** Check the file creation time/date in your File Manager to ensure you tap the most recent download, or delete older APK files before downloading.
-
-### 4. 🏷️ Verifying Version
-- The latest build is set to **Version 1.4 (Build 5)** with `applicationId`: `com.aistudio.moneygarden.arptmg`.
-- You can verify this in **Settings → Apps → Money Garden** (scroll to the bottom of the App Info page).
+| Version | Build | Key Updates & Features |
+| :--- | :--- | :--- |
+| **v1.4** | **5** | **Google Sign-In & Firebase Auth**: Secure Google authentication via Jetpack `CredentialManager`, user profile dialog, app title updated to **Money Garden**, in-app version badges, and updated root `MoneyGarden.apk`. |
+| **v1.3** | **4** | **Opening Balances Wizard**: Easily configure starting cash in hand, bank accounts, and initial friend receivables/payables without dummy transactions; zero-out data reset option. |
+| **v1.2** | **3** | **Friends Expense Splitting**: Full shared expense support (equal and custom splits, friend-paid expenses, debt settlement receipts, clear "Who owes who" statements). |
+| **v1.1** | **2** | **Accounting Engine & Indian Currency**: Double-entry ledger with integer paise accuracy, Indian Lakh formatting (`₹1,25,000.00`), auditable balance sheet (`Assets = Liabilities + Equity`). |
+| **v1.0** | **1** | **Initial Core Release**: Virtual money garden gamification (5 plant growth stages), savings goals tracker, and categorized daily expense & income ledger. |
 
 ---
 

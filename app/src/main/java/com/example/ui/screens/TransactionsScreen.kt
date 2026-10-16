@@ -451,7 +451,7 @@ fun TransactionsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Arpita's Personal Share:", style = MaterialTheme.typography.bodyMedium)
+                            Text("Your Personal Share:", style = MaterialTheme.typography.bodyMedium)
                             Text(AccountingEngine.formatPaise(tx.personalAmountPaise), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                         }
                         if (tx.totalAmountPaise != tx.personalAmountPaise) {
