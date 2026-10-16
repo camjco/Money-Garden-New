@@ -4,12 +4,13 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * User profile configuration for Arpita.
+ * User profile configuration.
  */
 @Entity(tableName = "user_profiles")
 data class UserProfile(
-    @PrimaryKey val id: String = "arpita_default",
-    val displayName: String = "Arpita",
+    @PrimaryKey val id: String = "user_default",
+    val displayName: String = "",
+    val hasSetPreferredName: Boolean = false,
     val currencySymbol: String = "₹",
     val isPinProtectionEnabled: Boolean = false,
     val pinHash: String = "",

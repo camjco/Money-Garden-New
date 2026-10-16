@@ -52,6 +52,7 @@ import com.example.ui.screens.ReportsScreen
 import com.example.ui.screens.SavingsGoalsScreen
 import com.example.ui.screens.TransactionsScreen
 import com.example.ui.screens.UserProfileDialog
+import com.example.ui.screens.WelcomeNamePromptDialog
 import com.google.firebase.auth.FirebaseUser
 
 sealed class NavTab(val title: String, val icon: ImageVector, val tag: String) {
@@ -71,6 +72,7 @@ fun MoneyGardenApp(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val userMessage by viewModel.userMessage.collectAsStateWithLifecycle()
+    val currentUserName = state.userProfile?.displayName?.takeIf { it.isNotBlank() } ?: "You"
     val snackbarHostState = remember { SnackbarHostState() }
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -225,6 +227,12 @@ fun MoneyGardenApp(
                     onAddFriend = { name, nickname, contact, notes ->
                         viewModel.addFriend(name, nickname, contact, notes)
                     },
+                    onDeleteFriend = { friendId ->
+                        viewModel.deleteFriend(friendId)
+                    },
+                    onDeleteAllFriends = {
+                        viewModel.deleteAllFriends()
+                    },
                     onRecordRepaymentFromFriend = { date, amount, friendId, accountId, notes ->
                         viewModel.recordRepaymentFromFriend(amount, friendId, accountId, date, notes)
                     },
@@ -267,6 +275,7 @@ fun MoneyGardenApp(
             accounts = state.accounts,
             categories = state.categories,
             friends = state.friends,
+            userName = currentUserName,
             onDismiss = { showAddTxDialog = false },
             onSavePersonalExpense = { date, amount, desc, accId, catId, receiptUri, notes ->
                 viewModel.postPersonalExpense(
@@ -350,6 +359,7 @@ fun MoneyGardenApp(
         OpeningBalancesDialog(
             accounts = state.accounts,
             friends = state.friends,
+            userName = currentUserName,
             onDismiss = { showOpeningBalancesDialog = false },
             onSaveOpeningBalances = { asOfDate, accBalances, friendRec, friendPay ->
                 viewModel.recordOpeningBalances(asOfDate, accBalances, friendRec, friendPay)
@@ -367,10 +377,25 @@ fun MoneyGardenApp(
     if (showUserProfileDialog && currentUser != null) {
         UserProfileDialog(
             user = currentUser,
+            currentPreferredName = state.userProfile?.displayName ?: (currentUser.displayName ?: ""),
+            onUpdatePreferredName = { newName ->
+                viewModel.setPreferredDisplayName(newName, currentUser)
+            },
             onDismiss = { showUserProfileDialog = false },
             onSignedOut = {
                 showUserProfileDialog = false
                 onSignOut()
+            }
+        )
+    }
+
+    // First Sign-In Preferred Name Setup Prompt
+    val userProfile = state.userProfile
+    if (currentUser != null && userProfile != null && !userProfile.hasSetPreferredName) {
+        WelcomeNamePromptDialog(
+            initialName = currentUser.displayName?.takeIf { it.isNotBlank() } ?: "",
+            onNameConfirmed = { chosenName ->
+                viewModel.setPreferredDisplayName(chosenName, currentUser)
             }
         )
     }

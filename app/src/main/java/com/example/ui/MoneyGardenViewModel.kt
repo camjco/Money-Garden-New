@@ -21,6 +21,8 @@ import com.example.data.repository.FinanceRepository
 import com.example.domain.AccountingEngine
 import com.example.domain.HealthScoreBreakdown
 import com.example.domain.HealthScoreCalculator
+import com.example.data.firebase.AuthService
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -57,6 +59,17 @@ class MoneyGardenViewModel(application: Application) : AndroidViewModel(applicat
 
     private val _userMessage = MutableStateFlow<String?>(null)
     val userMessage: StateFlow<String?> = _userMessage
+
+    init {
+        viewModelScope.launch {
+            try {
+                // Clear out legacy default seeded friends so register starts empty for user customization
+                repository.deleteExistingSeedFriends()
+            } catch (e: Exception) {
+                // Ignore initialization errors
+            }
+        }
+    }
 
     val uiState: StateFlow<DashboardUiState> = combine(
         repository.accountsFlow,
@@ -469,6 +482,28 @@ class MoneyGardenViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    fun deleteFriend(friendId: Long) {
+        viewModelScope.launch {
+            try {
+                repository.deleteFriend(friendId)
+                _userMessage.value = "Friend removed from register"
+            } catch (e: Exception) {
+                _userMessage.value = "Error: ${e.message}"
+            }
+        }
+    }
+
+    fun deleteAllFriends() {
+        viewModelScope.launch {
+            try {
+                repository.deleteAllFriends()
+                _userMessage.value = "All friends removed from register"
+            } catch (e: Exception) {
+                _userMessage.value = "Error: ${e.message}"
+            }
+        }
+    }
+
     fun addAccount(name: String, type: AccountType, openingBalancePaise: Long) {
         viewModelScope.launch {
             try {
@@ -500,9 +535,24 @@ class MoneyGardenViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    fun setPreferredDisplayName(displayName: String, firebaseUser: FirebaseUser? = null) {
+        viewModelScope.launch {
+            try {
+                repository.updateUserProfileDisplayName(displayName, markAsPreferred = true)
+                firebaseUser?.let { user ->
+                    AuthService.updateRemoteDisplayName(getApplication(), user, displayName)
+                }
+                _userMessage.value = "Welcome, $displayName! 🌿"
+            } catch (e: Exception) {
+                _userMessage.value = "Error updating name: ${e.message}"
+            }
+        }
+    }
+
     fun updateUserDisplayName(displayName: String) {
         viewModelScope.launch {
-            repository.updateUserProfileDisplayName(displayName)
+            val current = repository.userProfileFlow
+            repository.updateUserProfileDisplayName(displayName, markAsPreferred = false)
         }
     }
 }

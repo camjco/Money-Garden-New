@@ -96,8 +96,9 @@ fun DashboardScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column {
+                    val userName = state.userProfile?.displayName?.takeIf { it.isNotBlank() } ?: "Friend"
                     Text(
-                        text = "Hello, ${state.userProfile?.displayName ?: "Arpita"}! 🌿",
+                        text = "Hello, $userName! 🌿",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground

@@ -16,11 +16,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,6 +30,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -55,6 +58,8 @@ import com.google.firebase.auth.FirebaseUser
 @Composable
 fun UserProfileDialog(
     user: FirebaseUser,
+    currentPreferredName: String = "",
+    onUpdatePreferredName: (String) -> Unit = {},
     onDismiss: () -> Unit,
     onSignedOut: () -> Unit,
     modifier: Modifier = Modifier
@@ -63,6 +68,8 @@ fun UserProfileDialog(
     val coroutineScope = rememberCoroutineScope()
     val credentialManager = remember { CredentialManager.create(context) }
     var showConfirmSignOut by remember { mutableStateOf(false) }
+    var showEditNameDialog by remember { mutableStateOf(false) }
+    var editedName by remember { mutableStateOf(currentPreferredName.ifBlank { user.displayName ?: "" }) }
 
     if (showConfirmSignOut) {
         AlertDialog(
@@ -158,6 +165,48 @@ fun UserProfileDialog(
                     textAlign = TextAlign.Center
                 )
 
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Preferred Greeting Name Section
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+                    ) {
+                        Column {
+                            Text(
+                                text = "ADDRESSED AS",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                            )
+                            Text(
+                                text = currentPreferredName.ifBlank { displayName },
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                editedName = currentPreferredName.ifBlank { displayName }
+                                showEditNameDialog = true
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.testTag("btn_edit_preferred_name")
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Edit")
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Account info card
@@ -252,4 +301,50 @@ fun UserProfileDialog(
         },
         modifier = modifier
     )
+
+    if (showEditNameDialog) {
+        AlertDialog(
+            onDismissRequest = { showEditNameDialog = false },
+            title = { Text("Edit Preferred Name") },
+            text = {
+                Column {
+                    Text(
+                        text = "Enter the name you'd like to be addressed by across greetings, splits, and reports:",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedTextField(
+                        value = editedName,
+                        onValueChange = { editedName = it },
+                        label = { Text("Your Preferred Name *") },
+                        placeholder = { Text("e.g. Alex or Manoj") },
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("input_edit_preferred_name")
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (editedName.isNotBlank()) {
+                            onUpdatePreferredName(editedName.trim())
+                            showEditNameDialog = false
+                        }
+                    },
+                    enabled = editedName.isNotBlank(),
+                    modifier = Modifier.testTag("btn_save_edit_preferred_name")
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditNameDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }

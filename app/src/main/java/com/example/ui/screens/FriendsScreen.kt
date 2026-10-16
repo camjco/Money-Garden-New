@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Handshake
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
@@ -65,13 +67,18 @@ import com.example.ui.DashboardUiState
 fun FriendsScreen(
     state: DashboardUiState,
     onAddFriend: (name: String, nickname: String?, contact: String?, notes: String?) -> Unit,
+    onDeleteFriend: (friendId: Long) -> Unit,
+    onDeleteAllFriends: () -> Unit,
     onRecordRepaymentFromFriend: (date: Long, amountPaise: Long, friendId: Long, accountId: Long, notes: String?) -> Unit,
     onRecordRepaymentToFriend: (date: Long, amountPaise: Long, friendId: Long, accountId: Long, notes: String?) -> Unit,
     onOpenOpeningBalances: () -> Unit
 ) {
+    val userName = state.userProfile?.displayName?.takeIf { it.isNotBlank() } ?: "You"
     var showAddFriendDialog by remember { mutableStateOf(false) }
+    var friendToDelete by remember { mutableStateOf<Friend?>(null) }
+    var showDeleteAllConfirm by remember { mutableStateOf(false) }
     var selectedFriendForRepayment by remember { mutableStateOf<Friend?>(null) }
-    var repaymentType by remember { mutableStateOf("RECEIVED") } // RECEIVED (friend pays arpita) or PAID (arpita pays friend)
+    var repaymentType by remember { mutableStateOf("RECEIVED") } // RECEIVED (friend pays user) or PAID (user pays friend)
     var repaymentAmountText by remember { mutableStateOf("") }
     var repaymentAccountId by remember { mutableStateOf<Long?>(state.accounts.firstOrNull()?.id) }
     var repaymentDateMillis by remember { androidx.compose.runtime.mutableLongStateOf(System.currentTimeMillis()) }
@@ -127,12 +134,12 @@ fun FriendsScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Receivables (Owed to you): ${AccountingEngine.formatPaise(state.totalReceivablesPaise)}",
+                                text = "Receivables (Owed to $userName): ${AccountingEngine.formatPaise(state.totalReceivablesPaise)}",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = "Payables (You owe): ${AccountingEngine.formatPaise(state.totalPayablesPaise)}",
+                                text = "Payables ($userName owes): ${AccountingEngine.formatPaise(state.totalPayablesPaise)}",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -166,6 +173,25 @@ fun FriendsScreen(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
+                    if (state.friends.isNotEmpty()) {
+                        TextButton(
+                            onClick = { showDeleteAllConfirm = true },
+                            modifier = Modifier.testTag("btn_clear_all_friends")
+                        ) {
+                            Icon(
+                                Icons.Default.DeleteSweep,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                "Delete All",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                    }
                 }
             }
 
@@ -193,6 +219,8 @@ fun FriendsScreen(
                 items(state.friends) { friend ->
                     FriendCardItem(
                         friend = friend,
+                        userName = userName,
+                        onDeleteClick = { friendToDelete = friend },
                         onSettleUpClick = {
                             selectedFriendForRepayment = friend
                             if (friend.totalReceivablePaise > 0L) {
@@ -317,12 +345,12 @@ fun FriendsScreen(
                         FilterChip(
                             selected = repaymentType == "RECEIVED",
                             onClick = { repaymentType = "RECEIVED" },
-                            label = { Text("${friend.name} pays Arpita") }
+                            label = { Text("${friend.name} pays $userName") }
                         )
                         FilterChip(
                             selected = repaymentType == "PAID",
                             onClick = { repaymentType = "PAID" },
-                            label = { Text("Arpita pays ${friend.name}") }
+                            label = { Text("$userName pays ${friend.name}") }
                         )
                     }
 
@@ -423,11 +451,78 @@ fun FriendsScreen(
             }
         )
     }
+
+    // Delete Single Friend Dialog
+    if (friendToDelete != null) {
+        val f = friendToDelete!!
+        AlertDialog(
+            onDismissRequest = { friendToDelete = null },
+            title = { Text("Delete Friend?") },
+            text = {
+                Column {
+                    Text("Are you sure you want to delete ${f.name} from your register?")
+                    if (f.netPositionPaise != 0L) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Note: Net balance with ${f.name} is ${AccountingEngine.formatPaise(f.netPositionPaise)}. Deleting will remove this friend from your register.",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteFriend(f.id)
+                        friendToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.testTag("btn_confirm_delete_friend")
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { friendToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Delete All Friends Dialog
+    if (showDeleteAllConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAllConfirm = false },
+            title = { Text("Delete All Friends?") },
+            text = { Text("Are you sure you want to delete all friends from your register? You can add new friends anytime.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteAllFriends()
+                        showDeleteAllConfirm = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.testTag("btn_confirm_delete_all_friends")
+                ) {
+                    Text("Delete All")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAllConfirm = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
 fun FriendCardItem(
     friend: Friend,
+    userName: String,
+    onDeleteClick: () -> Unit,
     onSettleUpClick: () -> Unit
 ) {
     Card(
@@ -478,15 +573,30 @@ fun FriendCardItem(
                     }
                 }
 
-                // Settle Up Action Button
-                OutlinedButton(
-                    onClick = onSettleUpClick,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.testTag("btn_settle_up_${friend.id}")
-                ) {
-                    Icon(Icons.Default.Handshake, contentDescription = null, modifier = Modifier.size(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Settle Up Action Button
+                    OutlinedButton(
+                        onClick = onSettleUpClick,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.testTag("btn_settle_up_${friend.id}")
+                    ) {
+                        Icon(Icons.Default.Handshake, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Settle Up")
+                    }
+
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Settle Up")
+
+                    IconButton(
+                        onClick = onDeleteClick,
+                        modifier = Modifier.testTag("btn_delete_friend_${friend.id}")
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete ${friend.name}",
+                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                        )
+                    }
                 }
             }
 
@@ -509,13 +619,13 @@ fun FriendCardItem(
                 ) {
                     val statusText = when {
                         friend.totalReceivablePaise > 0L && friend.totalPayablePaise == 0L ->
-                            "${friend.name} owes you ${AccountingEngine.formatPaise(friend.totalReceivablePaise)}"
+                            "${friend.name} owes $userName ${AccountingEngine.formatPaise(friend.totalReceivablePaise)}"
                         friend.totalPayablePaise > 0L && friend.totalReceivablePaise == 0L ->
-                            "You owe ${friend.name} ${AccountingEngine.formatPaise(friend.totalPayablePaise)}"
+                            "$userName owes ${friend.name} ${AccountingEngine.formatPaise(friend.totalPayablePaise)}"
                         friend.totalReceivablePaise > 0L && friend.totalPayablePaise > 0L ->
-                            "${friend.name} owes you ${AccountingEngine.formatPaise(friend.totalReceivablePaise)}, you owe ${AccountingEngine.formatPaise(friend.totalPayablePaise)}"
+                            "${friend.name} owes $userName ${AccountingEngine.formatPaise(friend.totalReceivablePaise)}, $userName owes ${AccountingEngine.formatPaise(friend.totalPayablePaise)}"
                         else ->
-                            "You and ${friend.name} are settled up! ✨"
+                            "$userName and ${friend.name} are settled up! ✨"
                     }
 
                     Text(

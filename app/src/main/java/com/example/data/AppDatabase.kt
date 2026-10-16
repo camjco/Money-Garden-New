@@ -51,7 +51,7 @@ import kotlinx.coroutines.launch
         CheckInActivity::class,
         ReconciliationRecord::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -99,8 +99,9 @@ abstract class AppDatabase : RoomDatabase() {
         // User profile
         userProfileDao().saveUserProfile(
             UserProfile(
-                id = "arpita_default",
-                displayName = "Arpita",
+                id = "user_default",
+                displayName = "",
+                hasSetPreferredName = false,
                 currencySymbol = "₹",
                 isPinProtectionEnabled = false,
                 gamificationEnabled = true,
@@ -147,10 +148,6 @@ abstract class AppDatabase : RoomDatabase() {
             TransactionCategory(name = "Other Income", type = CategoryType.INCOME, iconName = "paid", colorHex = "#14B8A6", isDefault = true)
         )
         categoryDao().insertDefaultCategories(defaultCategories)
-
-        // Seed initial Friends with 0 balances
-        friendDao().insertFriend(Friend(name = "Alex", nickname = "Lex", notes = "Classmate", openingReceivablePaise = 0L, openingPayablePaise = 0L, totalReceivablePaise = 0L, totalPayablePaise = 0L))
-        friendDao().insertFriend(Friend(name = "Priya", nickname = "Pree", notes = "Best friend", openingReceivablePaise = 0L, openingPayablePaise = 0L, totalReceivablePaise = 0L, totalPayablePaise = 0L))
 
         // Initial Savings Goal with 0 saved
         savingsGoalDao().insertGoal(

@@ -77,6 +77,7 @@ fun AddTransactionDialog(
     accounts: List<FinancialAccount>,
     categories: List<TransactionCategory>,
     friends: List<Friend>,
+    userName: String = "You",
     onDismiss: () -> Unit,
     onSavePersonalExpense: (date: Long, amountPaise: Long, desc: String, accountId: Long, categoryId: Long, receiptUri: String?, notes: String?) -> Unit,
     onSaveSharedExpense: (date: Long, totalPaise: Long, arpitaPaise: Long, friendAllocations: Map<Long, Long>, desc: String, accountId: Long, categoryId: Long, receiptUri: String?, notes: String?) -> Unit,
@@ -384,12 +385,12 @@ fun AddTransactionDialog(
                                 FilterChip(
                                     selected = whoPaid == "ARPITA",
                                     onClick = { whoPaid = "ARPITA" },
-                                    label = { Text("You Paid") }
+                                    label = { Text("$userName Paid") }
                                 )
                                 FilterChip(
                                     selected = whoPaid == "FRIEND",
                                     onClick = { whoPaid = "FRIEND" },
-                                    label = { Text("Friend Paid for You") }
+                                    label = { Text("Friend Paid for $userName") }
                                 )
                             }
 
@@ -434,7 +435,7 @@ fun AddTransactionDialog(
                                 OutlinedTextField(
                                     value = arpitaShareText,
                                     onValueChange = { arpitaShareText = it },
-                                    label = { Text("Your Personal Share (₹)") },
+                                    label = { Text("$userName's Personal Share (₹)") },
                                     modifier = Modifier.fillMaxWidth()
                                 )
 
@@ -444,7 +445,7 @@ fun AddTransactionDialog(
                                     OutlinedTextField(
                                         value = friendAmounts[fId] ?: "",
                                         onValueChange = { friendAmounts[fId] = it },
-                                        label = { Text("$fName's Share (Owes You ₹)") },
+                                        label = { Text("$fName's Share (Owes $userName ₹)") },
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                 }
@@ -466,7 +467,7 @@ fun AddTransactionDialog(
                                 OutlinedTextField(
                                     value = arpitaShareText,
                                     onValueChange = { arpitaShareText = it },
-                                    label = { Text("Your Share (You Owe Friend ₹)") },
+                                    label = { Text("$userName's Share ($userName Owes Friend ₹)") },
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }

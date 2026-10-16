@@ -679,6 +679,18 @@ class FinanceRepository(private val db: AppDatabase) {
         db.friendDao().insertFriend(friend)
     }
 
+    suspend fun deleteFriend(friendId: Long): Unit = withContext(Dispatchers.IO) {
+        db.friendDao().deleteFriendById(friendId)
+    }
+
+    suspend fun deleteAllFriends(): Unit = withContext(Dispatchers.IO) {
+        db.friendDao().deleteAllFriends()
+    }
+
+    suspend fun deleteExistingSeedFriends(): Unit = withContext(Dispatchers.IO) {
+        db.friendDao().deleteFriendsByNames(listOf("Alex", "Priya"))
+    }
+
     suspend fun saveAccount(account: FinancialAccount): Long = withContext(Dispatchers.IO) {
         db.accountDao().insertAccount(account)
     }
@@ -701,7 +713,7 @@ class FinanceRepository(private val db: AppDatabase) {
         val friendsMap = db.friendDao().getAllFriends().associateBy { it.id }
 
         val sb = StringBuilder()
-        sb.append("ID,Date,Type,Description,Category,Payment/Source Account,Destination Account,Friend,Total Amount (Paise),Total Amount (INR),Arpita Share (INR),Status\n")
+        sb.append("ID,Date,Type,Description,Category,Payment/Source Account,Destination Account,Friend,Total Amount (Paise),Total Amount (INR),Personal Share (INR),Status\n")
 
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
         for (tx in transactions) {
@@ -833,8 +845,17 @@ class FinanceRepository(private val db: AppDatabase) {
         db.journalDao().insertJournalLines(linesWithId)
     }
 
-    suspend fun updateUserProfileDisplayName(displayName: String) = withContext(Dispatchers.IO) {
+    suspend fun updateUserProfileDisplayName(displayName: String, markAsPreferred: Boolean = true) = withContext(Dispatchers.IO) {
         val existing = db.userProfileDao().getUserProfile() ?: UserProfile()
-        db.userProfileDao().saveUserProfile(existing.copy(displayName = displayName))
+        if (!markAsPreferred && existing.hasSetPreferredName && existing.displayName.isNotBlank()) {
+            // User already set their preferred address name; preserve it
+            return@withContext
+        }
+        db.userProfileDao().saveUserProfile(
+            existing.copy(
+                displayName = displayName,
+                hasSetPreferredName = if (markAsPreferred) true else existing.hasSetPreferredName
+            )
+        )
     }
 }

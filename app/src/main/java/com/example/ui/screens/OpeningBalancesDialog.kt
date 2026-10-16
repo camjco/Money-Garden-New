@@ -62,6 +62,7 @@ import java.util.Locale
 fun OpeningBalancesDialog(
     accounts: List<FinancialAccount>,
     friends: List<Friend>,
+    userName: String = "You",
     onDismiss: () -> Unit,
     onSaveOpeningBalances: (
         asOfDate: Long,
@@ -273,7 +274,7 @@ fun OpeningBalancesDialog(
                             color = MaterialTheme.colorScheme.secondary
                         )
                         Text(
-                            text = "Did any friends owe Arpita money, or did Arpita owe them?",
+                            text = "Did any friends owe $userName money, or did $userName owe them?",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -309,7 +310,7 @@ fun OpeningBalancesDialog(
                                 OutlinedTextField(
                                     value = friendRecInputs[f.id] ?: "",
                                     onValueChange = { friendRecInputs[f.id] = it },
-                                    label = { Text("Owed to Arpita (₹)") },
+                                    label = { Text("Owed to $userName (₹)") },
                                     placeholder = { Text("0") },
                                     singleLine = true,
                                     modifier = Modifier.weight(1f).testTag("input_opening_rec_${f.id}")
@@ -318,7 +319,7 @@ fun OpeningBalancesDialog(
                                 OutlinedTextField(
                                     value = friendPayInputs[f.id] ?: "",
                                     onValueChange = { friendPayInputs[f.id] = it },
-                                    label = { Text("Arpita Owes (₹)") },
+                                    label = { Text("$userName Owes (₹)") },
                                     placeholder = { Text("0") },
                                     singleLine = true,
                                     modifier = Modifier.weight(1f).testTag("input_opening_pay_${f.id}")

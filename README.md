@@ -66,13 +66,15 @@ Because this is a standalone APK installed directly (not from Google Play Store)
    - Beautiful Indian number formatting (`₹1,25,000.50`, `₹250.00`).
    - True auditable ledger: transactions are never deleted silently. Any correction is posted as a balanced reversal journal entry linked to the original.
 
-3. **Smart Shared Expenses & Friend Splits:**
+3. **Smart Shared Expenses & Dynamic Friends Register:**
+   - **Full Friend Management:** Add and delete friends directly from the Friends screen, with options to delete individual friends or clear the register. All legacy pre-populated friends have been removed so your register is completely user-controlled.
+   - **Dynamic User Name:** On first sign-in, you are asked how you'd like to be addressed. All greetings ("Hello, Manoj! 🌿"), who-paid options ("[Name] Paid", "Friend Paid for [Name]"), and split statements update dynamically based on your chosen name (editable anytime in the Profile modal).
    - Equal splits, unequal splits, and multi-friend splits.
    - Clearly separates **personal expenditure** from **receivables owed by friends**.
    - Supports purchases where a friend pays for you (records a payable without touching cash or bank funds).
    - Repayments of receivables are treated as collection of assets (never artificial income).
    - Repayments of payables are treated as settlement of liabilities (never new expenses).
-   - Clear human-friendly statements: *"Alex owes you ₹250.00"*, *"You owe Priya ₹180.00"*, *"You and Alex are settled up! ✨"*.
+   - Clear human-friendly statements: *"[Friend] owes [You] ₹250.00"*, *"[You] owe [Friend] ₹180.00"*, *"[You] and [Friend] are settled up! ✨"*.
 
 4. **The Virtual Money Garden & Positive Gamification:**
    - Custom-drawn 5-stage plant visualizer (Seed 🌰 → Tender Sprout 🌱 → Growing Bush 🌿 → Budding Flower 🌸 → Money Tree in Bloom 🌳).

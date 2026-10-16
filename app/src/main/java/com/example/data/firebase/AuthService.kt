@@ -171,4 +171,19 @@ object AuthService {
             handleFirestoreError(e, OperationType.WRITE, "users/${user.uid}")
         }
     }
+
+    suspend fun updateRemoteDisplayName(context: Context, user: FirebaseUser, displayName: String) {
+        try {
+            val dbId = context.getString(R.string.firestore_database_id)
+            val db = FirebaseFirestore.getInstance(dbId)
+            val userDoc = db.collection("users").document(user.uid)
+            userDoc.update(
+                "displayName", displayName,
+                "preferredName", displayName,
+                "updatedAt", FieldValue.serverTimestamp()
+            ).await()
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to update preferred name in Firestore: ${e.message}")
+        }
+    }
 }

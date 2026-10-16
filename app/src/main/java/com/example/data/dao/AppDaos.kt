@@ -1,6 +1,7 @@
 package com.example.data.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -97,6 +98,18 @@ interface FriendDao {
 
     @Query("UPDATE friends SET openingReceivablePaise = 0, openingPayablePaise = 0, totalReceivablePaise = 0, totalPayablePaise = 0")
     suspend fun nullifyAllFriendBalances()
+
+    @Delete
+    suspend fun deleteFriend(friend: Friend)
+
+    @Query("DELETE FROM friends WHERE id = :id")
+    suspend fun deleteFriendById(id: Long)
+
+    @Query("DELETE FROM friends WHERE name IN (:names)")
+    suspend fun deleteFriendsByNames(names: List<String>)
+
+    @Query("DELETE FROM friends")
+    suspend fun deleteAllFriends()
 }
 
 @Dao
@@ -233,12 +246,18 @@ interface ReconciliationDao {
 
 @Dao
 interface UserProfileDao {
-    @Query("SELECT * FROM user_profiles WHERE id = 'arpita_default' LIMIT 1")
+    @Query("SELECT * FROM user_profiles LIMIT 1")
     fun getUserProfileFlow(): Flow<UserProfile?>
 
-    @Query("SELECT * FROM user_profiles WHERE id = 'arpita_default' LIMIT 1")
+    @Query("SELECT * FROM user_profiles LIMIT 1")
     suspend fun getUserProfile(): UserProfile?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveUserProfile(profile: UserProfile)
+
+    @Query("UPDATE user_profiles SET displayName = :displayName, hasSetPreferredName = 1")
+    suspend fun updateDisplayName(displayName: String)
+
+    @Query("DELETE FROM user_profiles")
+    suspend fun deleteAllProfiles()
 }
